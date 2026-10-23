@@ -8,6 +8,7 @@ from psycopg_pool import PoolTimeout
 
 from app.config import Settings
 from app.customers import router
+from app.matching import router as matching_router
 from app.db import create_pool, get_connection
 
 
@@ -51,4 +52,5 @@ def create_app(settings: Settings | None = None, pool=None) -> FastAPI:
         return {"status": "ready"}
 
     app.include_router(router)
+    app.include_router(matching_router)
     return app

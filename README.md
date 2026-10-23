@@ -67,6 +67,19 @@ Invoke-RestMethod 'http://127.0.0.1:8001/api/v1/customers/2/meters' -Headers @{ 
 
 `/ready` kontroluje iba dostupnosť DB. Chýbajúca tabuľka, funkcia alebo oprávnenie sa prejaví pri zákazníckom dotaze ako 500 s neutrálnou správou. SQL výpis automaticky nespúšťaj ako migráciu.
 
+## Demo párovanie
+
+Pod rovnakým Bearer tokenom a obmedzením `DEMO_CUSTOMER_ID` sú dostupné:
+
+- `GET /api/v1/customers/2/demo/scenarios` – päť syntetických profilov: FVE, denný odber, večerný odber, odhad bez IMS a nízky cenový limit.
+- `GET /api/v1/customers/2/demo/matches?scenario_id=solar-home` – zoradené odporúčania. Možno vybrať aj spotrebiteľský scenár.
+
+Profily obsahujú 96 hodnôt kWh za 15 minút pre ukážkový deň 15. 6. 2025. Nejde o DB odberné miesta ani historické merania zákazníka; odpoveď obsahuje `data_source: synthetic_demo`. Register ani merania sa nemenia.
+
+V každom intervale sa potenciál zdieľania vypočíta ako minimum prebytku a odberu. Cenovo nekompatibilné dvojice a dvojice bez časového prekryvu majú nulové skóre a objem. Skóre používa váhy 50 % časový prekryv, 25 % cena, 15 % spoľahlivosť a 10 % vyváženosť objemov. Úspora porovnáva demo cenu so sadzbou 0,20 €/kWh; prínos výrobcu s výkupom 0,04 €/kWh. Ide o odhad bez poplatkov a distribučných platieb.
+
+Každá dvojica je samostatný odhad: výsledky nesčítavať ako spoločnú alokáciu skupiny. Tieto endpointy zatiaľ nezakladajú členstvo ani zmluvy a frontend ich ešte nevolá.
+
 ## Testy
 
 ```powershell
