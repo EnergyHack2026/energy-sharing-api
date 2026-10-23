@@ -21,6 +21,28 @@ V `.env` nastav `DATABASE_URL` podľa svojej databázy, vygenerovaný token vlo�
 
 Dokumentácia: [Swagger UI](http://127.0.0.1:8001/docs). Klikni **Authorize** a vlož samotný token. Chýbajúci alebo nesprávny token vráti 401, iný zákazník než `DEMO_CUSTOMER_ID` vráti 403. Token predstavuje iba lokálnu testovaciu identitu; pred nasadením treba nahradiť `app/security.py` skutočným prihlásením a overením identity. Token nevkladaj do verejného frontendového kódu.
 
+## Spustenie cez Docker na Ubuntu
+
+Vyžaduje Docker Engine s Docker Compose pluginom. Z priečinka `energy-sharing-api`:
+
+```bash
+cp .env.example .env
+nano .env
+```
+
+V `.env` nastav skutočné `DATABASE_URL`, vlastný náhodný `DEMO_API_TOKEN` a existujúce `DEMO_CUSTOMER_ID`. Token môžeš vygenerovať príkazom `openssl rand -hex 32`. Ak PostgreSQL beží priamo na Ubuntu hostiteľovi, namiesto `localhost` v databázovej URL použi `host.docker.internal`; PostgreSQL musí počúvať na rozhraní dostupnom z Docker siete a povoliť jej pripojenia v `pg_hba.conf`. Pre vzdialenú DB použi jej adresu. Ak frontend beží na inej adrese, nastav jej presný origin v `CORS_ORIGINS` ako JSON zoznam.
+
+```bash
+docker compose up -d --build
+docker compose logs --tail 100 api
+curl http://localhost:8001/health
+curl http://localhost:8001/ready
+```
+
+Swagger UI je na `http://IP_SERVERA:8001/docs`. Pre prístup zvonka musí firewall povoľovať TCP port 8001. Compose používa existujúcu databázu; databázu ani schému nevytvára. `.env` sa odovzdáva pri spustení a nekopíruje sa do image.
+
+Po zmene kódu znova spusti `docker compose up -d --build`. Zastavenie: `docker compose down`.
+
 ## Endpointy
 
 | GET | Výsledok |
